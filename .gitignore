@@ -1,6 +1,7 @@
 blib/
 MYMETA.*
 Makefile
+Makefile.old
 Elevate.bs
 Elevate.c
 Elevate.def
