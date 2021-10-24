@@ -1,40 +1,44 @@
-Win32-Elevate version 0.01
+Win32::Elevate version 0.01
 ==========================
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+Win32::Elevate provides a few simple facilities on Windows to elevate
+your currently running perl process to higher credentials, namely SYSTEM
+and TrustedInstaller. To achieve this feat, this package uses the
+standard Win32 API mangled through some rudimentary XS code.
+Obviously, this only works on Windows, starting with Vista, and will
+fail to even compile on any other platform. Your Perl distribution
+needs a C compiler and access to the standard windows header files.
 
-A README file is required for CPAN modules since CPAN extracts the
-README file from a module distribution so that people browsing the
-archive can use it get an idea of the modules uses. It is usually a
-good idea to provide version information here so that people can
-decide whether fixes for the module are worth downloading.
+Please note, that you must run you perl script with administrative
+privileges. It's possible to circumvent Window's user account protection
+or even gain admin privileges programmatically without user interaction,
+but for security reasons, this package does not do so.
+
 
 INSTALLATION
 
-To install this module type the following:
+To install this module, either use CPAN.
+For manual installation, type the following:
 
    perl Makefile.PL
    make
    make test
    make install
 
+Depending on your distribution, you will have to use the appropriate
+make command (e.g. gmake on Strawberry Perl). To find out, simply run
+
+   perl -V:make
+
+
 DEPENDENCIES
 
-This module requires these other modules and libraries:
+Win32
 
-  blah blah blah
 
 COPYRIGHT AND LICENCE
 
-Put the correct copyright and licence information here.
-
-Copyright (C) 2021 by A. U. Thor
+Copyright (C) 2021 by Daniel Just
 
 This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.32.1 or,
-at your option, any later version of Perl 5 you may have available.
-
-
+it under the GNU General Public License.
