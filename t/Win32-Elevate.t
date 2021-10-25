@@ -21,14 +21,19 @@ BEGIN { use_ok('Win32::Elevate') };
 is( $^O, 'MSWin32', 'Check for Win32 platform');
 
 # ToSystem()
-is( Win32::Elevate::ToSystem(), 0, "Elevate to system credentials" );
-ok( Win32::LoginName() =~ m{SYSTEM$}, "Have system credentials" );
+is( Win32::Elevate::ToSystem(), 0, "Elevate to system credentials; Error: $^E" );
+like( Win32::LoginName(), '/SYSTEM$/', "Have system credentials" );
+
+#sleep(30);
 
 # DeElevate()
-isnt( Win32::Elevate::DeElevate(), 0, "De-elevate" );
-ok( Win32::LoginName() !~ m{SYSTEM$}, "Don't have system credentials" );
+isnt( Win32::Elevate::DeElevate(), 0, "De-elevate; Error: $^E" );
+unlike( Win32::LoginName(), '/SYSTEM/', "Don't have system credentials" );
 
+#sleep(30);
 
 # ToTI(); this one fails currently
-is( Win32::Elevate::ToTI(), 0, "Elevate to trusted installer credentials" );
+is( Win32::Elevate::ToTI(), 0, "Elevate to trusted installer credentials; Error: $^E" );
+
+
 
