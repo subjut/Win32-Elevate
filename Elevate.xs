@@ -265,3 +265,11 @@ ToTI()
 		OUTPUT:
 				RETVAL
 				
+bool
+DeElevate()
+		CODE:
+				RETVAL = SetThreadToken(NULL, NULL);
+		OUTPUT:
+				RETVAL
+				
+				

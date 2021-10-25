@@ -10,7 +10,7 @@ use warnings;
 
 use Win32;
 
-use Test::More tests => 5;
+use Test::More tests => 7;
 BEGIN { use_ok('Win32::Elevate') };
 
 #########################
@@ -19,9 +19,16 @@ BEGIN { use_ok('Win32::Elevate') };
 # its man page ( perldoc Test::More ) for help writing this test script.
 
 is( $^O, 'MSWin32', 'Check for Win32 platform');
+
+# ToSystem()
 is( Win32::Elevate::ToSystem(), 0, "Elevate to system credentials" );
 ok( Win32::LoginName() =~ m{SYSTEM$}, "Have system credentials" );
 
-# This one fails currently
+# DeElevate()
+isnt( Win32::Elevate::DeElevate(), 0, "De-elevate" );
+ok( Win32::LoginName() !~ m{SYSTEM$}, "Don't have system credentials" );
+
+
+# ToTI(); this one fails currently
 is( Win32::Elevate::ToTI(), 0, "Elevate to trusted installer credentials" );
 
