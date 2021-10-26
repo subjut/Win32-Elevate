@@ -8,8 +8,6 @@
 use strict;
 use warnings;
 
-#use Win32;
-
 use Test::More tests => 9;
 BEGIN { use_ok('Win32::Elevate') };
 
