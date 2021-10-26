@@ -1,7 +1,14 @@
-use 5.016000;
+use 5.018000;
+use strict;
+use warnings;
 use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
+
+unless ($^O eq "MSWin32" || $^O eq "cygwin") {
+    die "OS unsupported\n";
+}
+
 WriteMakefile(
     NAME              => 'Win32::Elevate',
     VERSION_FROM      => 'lib/Win32/Elevate.pm', # finds $VERSION, requires EU::MM from perl >= 5.5
