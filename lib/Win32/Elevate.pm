@@ -148,8 +148,9 @@ Daniel Just
 
 Copyright (C) 2021 by Daniel Just
 
-This library is free software; you can redistribute it and/or modify
-it under the GNU General Public License.
+This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
+
+See L<http://www.perl.com/perl/misc/Artistic.html>
 
 
 =cut
