@@ -1,6 +1,6 @@
 package Win32::Elevate;
 
-use 5.016000;
+use 5.018000;
 use strict;
 use warnings;
 
@@ -32,55 +32,124 @@ XSLoader::load('Win32::Elevate', $VERSION);
 
 # Preloaded methods go here.
 
-1;
+1; # True! YES!
 __END__
 # Below is stub documentation for your module. You'd better edit it!
 
+=encoding utf8
+
 =head1 NAME
 
-Win32::Elevate - Perl extension for blah blah blah
+Win32::Elevate - Perl module for gaining higher access priviledges
 
 =head1 SYNOPSIS
 
   use Win32::Elevate;
-  blah blah blah
+  
+  # Gaining NT AUTHORITY\SYSTEM priviledges to access files and registry
+  # entries locked away from normal users
+  Win32::Elevate::BecomeSystem();
+  
+  # Some files and especially registry entries are not even acessible
+  # by SYSTEM. We need TrustedInstaller priviledges for that.
+  Win32::Elevate::BecomeTI();
+  
+  # Do some totally not shady stuff…
+  
+  # Done! Go back to user context.
+  Win32::Elevate::RevertToSelf();
 
 =head1 DESCRIPTION
 
-Stub documentation for Win32::Elevate, created by h2xs. It looks like the
-author of the extension was negligent enough to leave the stub
-unedited.
-
-Blah blah blah.
-
-=head2 EXPORT
-
-None by default.
+The purpose of this module is to provide a couple of functions to
+access files and registry entries to which not even an elevated
+administrative user has access to. For this to work, the current
+process already needs to have elevated permissions.
 
 
+B<WARNING!> If you don't know, what you are doing, this can obviously
+be fatally dangerous, such as an unbootable system. So do your research
+and, especially, test your code thoroughly.
+
+=head2 Functions
+
+=over
+
+=item B<Win32::Elevate::BecomeSystem()>
+
+Elevates the B<current process> to gain NT AUTHORITY/SYSTEM priviledges.
+
+Returns a positive value on success. On faliure, it returns C<0> and the
+current process is not altered.
+
+=item B<Win32::Elevate::BecomeTI()>
+
+Elevates the B<first thread> of the current process to gain
+NT SERVICE/TrustedInstaller priviledges. Since this only works on the first
+thread of a process, you cannot spawn another thread and expect it to have
+TrustedInstaller priviledges.
+
+Returns a positive value on success. On faliure, it returns C<0> and the current
+process/thread is not altered.
+
+=item B<Win32::Elevate::RevertToSelf()>
+
+Undoes the priviledge changes made by C<Win32::Elevate::BecomeSystem()> and/or 
+C<Win32::Elevate::BecomeTI()>. The current process reverts to the same 
+priviledges as before any of these two functions were called.
+
+Returns a positive value on success. On faliure, it returns C<0> and the current
+process/thread is not altered.
+
+=back
+
+=head2 Error Checking
+
+You can check C<$^E> or use C<Win32::FormatMessage( Win32::GetLastError() )>
+to get a descriptive error, but it might not be very informative. The C code
+calls several Win32 APIs. Since C<$^E> is set to the latest API call, you 
+won't know where it went bang!
+
+
+=head1 CAVEATS
+
+Obviously, this module only works on Windows. Also, it's not threadsafe.
+
+
+=head1 UNDER THE HOOD
+
+This module uses well known security design shortcomings in the Win32 API to gain priviledges usually reserved for system processes. In short, a process running as an elevated user who is a member of the I<Administrator> group can obtain C<SeDebugPrivilege>. This in turn allows that process to copy and modify access tokens of system processes and use such a token to impersonate its access rights. Check the L<links|"SEE ALSO"> below for more in-depth information.
 
 =head1 SEE ALSO
 
-Mention other useful documentation such as the documentation of
-related modules or operating system documentation (such as man pages
-in UNIX), or any relevant external documentation such as RFCs or
-standards.
+=over
 
-If you have a mailing list set up for your module, mention it here.
+=item L<https://www.tiraniddo.dev/2017/08/the-art-of-becoming-trustedinstaller.html>
 
-If you have a web site set up for your module, mention it here.
+=item L<https://posts.specterops.io/understanding-and-defending-against-access-token-theft-finding-alternatives-to-winlogon-exe-80696c8a73b>
+
+=item L<https://github.com/lab52io/StopDefender>. The C code of this module is mostly adapted from this program.
+
+=back
+
+=head1 BUGS
+
+The issue tracker is located on L<github|https://github.com/subjut/Win32-Elevate/issues>.
+
+=head1 SOURCE
+
+The source repository can be found on L<github|https://github.com/subjut/Win32-Elevate>.
 
 =head1 AUTHOR
 
-A. U. Thor, E<lt>a.u.thor@a.galaxy.far.far.awayE<gt>
+Daniel Just
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2021 by A. U. Thor
+Copyright (C) 2021 by Daniel Just
 
 This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.32.1 or,
-at your option, any later version of Perl 5 you may have available.
+it under the GNU General Public License.
 
 
 =cut
