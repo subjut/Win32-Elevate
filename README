@@ -14,6 +14,8 @@ privileges. It's possible to circumvent Window's user account protection
 or even gain admin elevation programmatically without user interaction,
 but for security reasons, this package does not provide such a function.
 
+This module was tested on Windows 7 and Windows 10.
+
 
 INSTALLATION
 

@@ -114,6 +114,7 @@ won't know where it went bang!
 =head1 CAVEATS
 
 Obviously, this module only works on Windows. Also, it's not threadsafe.
+It is tested on Windows 7 and 10.
 
 
 =head1 UNDER THE HOOD
