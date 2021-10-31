@@ -411,16 +411,24 @@ MODULE = Win32::Elevate		PACKAGE = Win32::Elevate
 
 
 int
-ToSystem()
+BecomeSystem()
 	CODE:
-		RETVAL = getElevation("SYSTEM");
+		if ( getElevation("SYSTEM") ) {
+			RETVAL = 0;
+		} else {
+			RETVAL = 1;
+		}
 	OUTPUT:
 		RETVAL
 
 int
-ToTI()
+BecomeTI()
 	CODE:
-		RETVAL = getElevation("TI");
+		if ( getElevation("TI") ) {
+			RETVAL = 0;
+		} else {
+			RETVAL = 1;
+		}
 	OUTPUT:
 		RETVAL
 
@@ -434,7 +442,7 @@ RevertToSelf()
 
 
 
-# The following is again from the WIN32 module.
+# The following is, again, from the WIN32 module.
 BOOT:
 {
 	const char *file = __FILE__;
