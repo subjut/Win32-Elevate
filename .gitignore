@@ -12,3 +12,5 @@ dll.*
 dll.*
 *.html
 *.tmp
+*.bak
+*.tar
