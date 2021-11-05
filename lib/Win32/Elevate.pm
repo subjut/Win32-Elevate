@@ -40,18 +40,18 @@ __END__
 
 =head1 NAME
 
-Win32::Elevate - Perl module for gaining higher access priviledges
+Win32::Elevate - Perl module for gaining higher access privilege
 
 =head1 SYNOPSIS
 
   use Win32::Elevate;
   
-  # Gaining NT AUTHORITY\SYSTEM priviledges to access files and registry
+  # Gaining NT AUTHORITY\SYSTEM privilege to access files and registry
   # entries locked away from normal users
   Win32::Elevate::BecomeSystem();
   
   # Some files and especially registry entries are not even acessible
-  # by SYSTEM. We need TrustedInstaller priviledges for that.
+  # by SYSTEM. We need TrustedInstaller privilege for that.
   Win32::Elevate::BecomeTI();
   
   # Do some totally not shady stuff…
@@ -77,29 +77,28 @@ and, especially, test your code thoroughly.
 
 =item B<Win32::Elevate::BecomeSystem()>
 
-Elevates the B<current process> to gain NT AUTHORITY/SYSTEM priviledges.
+Elevates the B<first thread> of the current process to gain
+NT AUTHORITY/SYSTEM privilege.
 
 Returns a positive value on success. On faliure, it returns C<0> and the
-current process is not altered.
+thread is not altered.
 
 =item B<Win32::Elevate::BecomeTI()>
 
 Elevates the B<first thread> of the current process to gain
-NT SERVICE/TrustedInstaller priviledges. Since this only works on the first
-thread of a process, you cannot spawn another thread and expect it to have
-TrustedInstaller priviledges.
+NT SERVICE/TrustedInstaller privilege.
 
 Returns a positive value on success. On faliure, it returns C<0> and the current
-process/thread is not altered.
+thread is not altered.
 
 =item B<Win32::Elevate::RevertToSelf()>
 
 Undoes the priviledge changes made by C<Win32::Elevate::BecomeSystem()> and/or 
-C<Win32::Elevate::BecomeTI()>. The current process reverts to the same 
-priviledges as before any of these two functions were called.
+C<Win32::Elevate::BecomeTI()>. The current thread reverts to the same 
+privilege as before any of these two functions were called.
 
 Returns a positive value on success. On faliure, it returns C<0> and the current
-process/thread is not altered.
+thread is not altered.
 
 =back
 
@@ -113,13 +112,16 @@ won't know where it went bang!
 
 =head1 CAVEATS
 
-Obviously, this module only works on Windows. Also, it's not threadsafe.
-It is tested on Windows 7 and 10.
+Obviously, this module only works on Windows. Also, it only works on the first
+thread of the current process. So you cannot spawn another thread and expect it
+to have the same privileges…
+
+This module is tested on Windows 7 and 10.
 
 
 =head1 UNDER THE HOOD
 
-This module uses well known security design shortcomings in the Win32 API to gain priviledges usually reserved for system processes. In short, a process running as an elevated user who is a member of the I<Administrator> group can obtain C<SeDebugPrivilege>. This in turn allows that process to copy and modify access tokens of system processes and use such a token to impersonate its access rights. Check the L<links|"SEE ALSO"> below for more in-depth information.
+This module uses well known security design shortcomings in the Win32 API to gain privilege usually reserved for system processes. In short, a process running as an elevated user who is a member of the I<Administrator> group can obtain C<SeDebugPrivilege>. This in turn allows that process to copy and modify access tokens of system processes and use such a token to impersonate its access rights. Check the L<links|"SEE ALSO"> below for more in-depth information.
 
 =head1 SEE ALSO
 
