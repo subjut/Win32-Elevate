@@ -191,16 +191,17 @@ static bool isAdmin() {
 	and SYSTEM elevation is attempted.
 	
 	Return codes -
-		0 - Successful impersonation
-		1 - No admin rights
-		2 - Failed to acquire SeDebugPrivilege
-		3 - Failed to start TrustedInstaller Service
-		4 - Failed to open Winlogon process (for SYSTEM elevation)
-		5 - Failed to acquire Winlogon token
-		6 - Failed to open TrustedInstaller process
-		7 - Failed to acquire TrustedInstaller token
-		8 - Failed to impersonate SYSTEM with token
-		9 - Failed to impersonate TrustedInstaller with token
+		0  - Successful impersonation
+		1  - No admin rights
+		2  - Failed to acquire SeDebugPrivilege
+		3  - Failed to start TrustedInstaller Service
+		4  - Failed to open Winlogon process (for SYSTEM elevation)
+		5  - Failed to acquire Winlogon token
+		6  - Failed to open TrustedInstaller process
+		7  - Failed to acquire TrustedInstaller token
+		8  - Failed to impersonate SYSTEM with token
+		9  - Failed to impersonate TrustedInstaller with token
+		10 - Failed to adjust current thread privileges
  */
 static int getElevation(char *elevationType) {
 	/* There are four steps involved in getting system privileges
@@ -218,7 +219,7 @@ static int getElevation(char *elevationType) {
 	
 	// Initialize variables and structures
 	HANDLE tokenHandle = NULL;
-	HANDLE duplicateTokenHandle = NULL;
+	HANDLE threadTokenHandle = NULL;
 	STARTUPINFO startupInfo;
 	PROCESS_INFORMATION processInformation;
 	ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
@@ -251,7 +252,7 @@ static int getElevation(char *elevationType) {
 
 
 	// Searching for Winlogon PID 
-	DWORD PID_TO_IMPERSONATE = GetProcessByName("winlogon.exe");
+	DWORD PID_TO_IMPERSONATE = GetProcessByName("lsass.exe");
 
 	if ( PID_TO_IMPERSONATE == 0 )
 	{
@@ -293,11 +294,25 @@ static int getElevation(char *elevationType) {
 	{
 		return 8;
 	}
+		
 	
-
+	// Step 5: Adjust privileges to be able to read and write registry
+	BOOL getThreadToken = OpenThreadToken(GetCurrentThread(), TOKEN_DUPLICATE | TOKEN_ASSIGN_PRIMARY | TOKEN_QUERY | TOKEN_ADJUST_PRIVILEGES, FALSE, &threadTokenHandle);
+	
+	if ( !SetPrivilege(threadTokenHandle, L"SeRestorePrivilege", TRUE) )
+	{
+		return 10;
+	}
+	if ( !SetPrivilege(threadTokenHandle, L"SeBackupPrivilege", TRUE) )
+	{
+		return 10;
+	}
+	
+	
 	// Closing unnecessary handles
 	CloseHandle(processHandle);
 	CloseHandle(tokenHandle);
+	CloseHandle(threadTokenHandle);
 
 
 	if ( strcmp(elevationType, "TI") == 0 )
@@ -321,6 +336,18 @@ static int getElevation(char *elevationType) {
 		if ( !impersonateUser )
 		{
 			return 9;
+		}
+		
+		// Step 5: Adjust privileges to be able to read and write registry
+		getThreadToken = OpenThreadToken(GetCurrentThread(), TOKEN_DUPLICATE | TOKEN_ASSIGN_PRIMARY | TOKEN_QUERY | TOKEN_ADJUST_PRIVILEGES, FALSE, &threadTokenHandle);
+		
+		if ( !SetPrivilege(threadTokenHandle, L"SeRestorePrivilege", TRUE) )
+		{
+			return 10;
+		}
+		if ( !SetPrivilege(threadTokenHandle, L"SeBackupPrivilege", TRUE) )
+		{
+			return 10;
 		}
 	}
 
