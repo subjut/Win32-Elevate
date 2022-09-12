@@ -32,18 +32,18 @@
 	Returns true if successful, false otherwise.
 */
 static BOOL SetPrivilege(
-	HANDLE hToken,					// access token handle
-	LPCWSTR lpszPrivilege,		// name of privilege to enable/disable
-	BOOL bEnablePrivilege		// to enable or disable privilege
+	HANDLE hToken,					/* access token handle */
+	LPCWSTR lpszPrivilege,		/* name of privilege to enable/disable */
+	BOOL bEnablePrivilege		/* to enable or disable privilege */
 )
 {
 	TOKEN_PRIVILEGES tp;
 	LUID luid;
 
 	if (!LookupPrivilegeValueW(
-		NULL,					// lookup privilege on local system
-		lpszPrivilege,		// privilege to lookup 
-		&luid))				// receives LUID of privilege
+		NULL,					/* lookup privilege on local system */
+		lpszPrivilege,		/* privilege to lookup  */
+		&luid))				/* receives LUID of privilege */
 	{
 		return FALSE;
 	}
@@ -56,7 +56,7 @@ static BOOL SetPrivilege(
 		tp.Privileges[0].Attributes = 0;
 
 
-	// Enable the privilege or disable all privileges
+	/* Enable the privilege or disable all privileges */
 	if (!AdjustTokenPrivileges(
 		hToken,
 		FALSE,
@@ -82,22 +82,22 @@ static BOOL SetPrivilege(
 	Returns true if successful, false otherwise.
 */
 static BOOL StartTrustedInstallerService() {
-	// Get a handle to the SCM database. 
+	/* Get a handle to the SCM database.  */
 	SC_HANDLE schSCManager = OpenSCManager(
-		NULL,                    // local computer
-		NULL,                    // servicesActive database 
-		SC_MANAGER_ALL_ACCESS);  // full access rights 
+		NULL,                    /* local computer */
+		NULL,                    /* servicesActive database  */
+		SC_MANAGER_ALL_ACCESS);  /* full access rights  */
 
 	if ( NULL == schSCManager )
 	{
 		return FALSE;
 	}
 
-	// Get a handle to the service.
+	/* Get a handle to the service. */
 	SC_HANDLE schService = OpenServiceW(
-		schSCManager,         // SCM database 
-		L"TrustedInstaller",  // name of service 
-		SERVICE_START);  // full access 
+		schSCManager,         /* SCM database  */
+		L"TrustedInstaller",  /* name of service  */
+		SERVICE_START);  /* full access  */
 
 	if ( schService == NULL )
 	{
@@ -105,18 +105,18 @@ static BOOL StartTrustedInstallerService() {
 		return FALSE;
 	}
 
-	// Attempt to start the service.
+	/* Attempt to start the service. */
 	if ( !StartService(
-		schService,  // handle to service 
-		0,           // number of arguments 
-		NULL))      // no arguments 
+		schService,  /* handle to service  */
+		0,           /* number of arguments  */
+		NULL))      /* no arguments  */
 	{
 		CloseServiceHandle(schService);
 		CloseServiceHandle(schSCManager);
 		return FALSE;
 	}
 
-//	Sleep(2000);
+/*	Sleep(2000); */
 	CloseServiceHandle(schService);
 	CloseServiceHandle(schSCManager);
 
@@ -132,19 +132,19 @@ static int GetProcessByName(char *name)
 {
 	DWORD pid = 0;
 
-	// Create toolhelp snapshot.
+	/* Create toolhelp snapshot. */
 	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	PROCESSENTRY32 process;
 	ZeroMemory(&process, sizeof(process));
 	process.dwSize = sizeof(process);
 
-	// Walkthrough all processes.
+	/* Walkthrough all processes. */
 	if (Process32First(snapshot, &process))
 	{
 		do
 		{
-			// Compare process.szExeFile based on format of name, i.e., trim file path
-			// trim .exe if necessary, etc.
+			/* Compare process.szExeFile based on format of name, i.e., trim file path */
+			/* trim .exe if necessary, etc. */
 			if ( strcmp(process.szExeFile, name) == 0 )
 			{
 				return process.th32ProcessID;
@@ -179,7 +179,7 @@ static bool isAdmin() {
 }
 
 
-// END C helper functions
+/* END C helper functions */
 
 
 
@@ -211,13 +211,13 @@ static int getElevation(char *elevationType) {
 		 4. Impersonate own process with that token
 	*/
 	
-	// Step 0: Check if we are elevated (admin rights)
+	/* Step 0: Check if we are elevated (admin rights) */
 	if ( !isAdmin() )
 	{
 		return 1;
 	}
 	
-	// Initialize variables and structures
+	/* Initialize variables and structures */
 	HANDLE tokenHandle = NULL;
 	HANDLE threadTokenHandle = NULL;
 	STARTUPINFO startupInfo;
@@ -227,7 +227,7 @@ static int getElevation(char *elevationType) {
 	startupInfo.cb = sizeof(STARTUPINFO);
 
 
-	// Step 1: Add SE debug privilege
+	/* Step 1: Add SE debug privilege */
 	HANDLE currentTokenHandle = NULL;
 	BOOL getCurrentToken = OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &currentTokenHandle);
 	if ( !SetPrivilege(currentTokenHandle, L"SeDebugPrivilege", TRUE) )
@@ -236,13 +236,13 @@ static int getElevation(char *elevationType) {
 	}
 
 	
-	// Step 2: [Create and] open needed processes
+	/* Step 2: [Create and] open needed processes */
 	if ( strcmp(elevationType, "TI") == 0 )
 	{
-		// TrustedInstaller might already be running
+		/* TrustedInstaller might already be running */
 		if( !GetProcessByName("TrustedInstaller.exe") )
 		{
-			// Starting TI service from SC Manager
+			/* Starting TI service from SC Manager */
 			if ( !StartTrustedInstallerService() )
 			{
 				return 3;
@@ -251,8 +251,13 @@ static int getElevation(char *elevationType) {
 	}
 
 
+<<<<<<< HEAD
 	// Searching for Winlogon PID 
 	DWORD PID_TO_IMPERSONATE = GetProcessByName("lsass.exe");
+=======
+	/* Searching for Winlogon PID  */
+	DWORD PID_TO_IMPERSONATE = GetProcessByName("winlogon.exe");
+>>>>>>> 27c5805d37934334dd5e3d530c6047782c0fab11
 
 	if ( PID_TO_IMPERSONATE == 0 )
 	{
@@ -262,7 +267,7 @@ static int getElevation(char *elevationType) {
 	DWORD PID_TO_IMPERSONATE_TI = 0;
 	if ( strcmp(elevationType, "TI") == 0 )
 	{
-		// Searching for TrustedInstaller PID 
+		/* Searching for TrustedInstaller PID  */
 		PID_TO_IMPERSONATE_TI = GetProcessByName("TrustedInstaller.exe");
 
 		if ( PID_TO_IMPERSONATE_TI == 0 )
@@ -272,7 +277,7 @@ static int getElevation(char *elevationType) {
 	}
 
 	
-	// Call OpenProcess() to open WINLOGON
+	/* Call OpenProcess() to open WINLOGON */
 	HANDLE processHandle = OpenProcess(PROCESS_QUERY_INFORMATION, true, PID_TO_IMPERSONATE);
 	if ( processHandle == NULL )
 	{
@@ -280,7 +285,7 @@ static int getElevation(char *elevationType) {
 	}
 
 	
-	// Step 3: Get a copy of required tokens [SYSTEM]
+	/* Step 3: Get a copy of required tokens [SYSTEM] */
 	BOOL getToken = OpenProcessToken(processHandle, TOKEN_DUPLICATE | TOKEN_ASSIGN_PRIMARY | TOKEN_QUERY, &tokenHandle);
 	if ( !getToken )
 	{
@@ -288,7 +293,7 @@ static int getElevation(char *elevationType) {
 	}
 	
 
-	// Step 4: Impersonate user in a thread [SYSTEM]
+	/* Step 4: Impersonate user in a thread [SYSTEM] */
 	BOOL impersonateUser = ImpersonateLoggedOnUser(tokenHandle);
 	if ( !impersonateUser )
 	{
@@ -309,7 +314,12 @@ static int getElevation(char *elevationType) {
 	}
 	
 	
+<<<<<<< HEAD
 	// Closing unnecessary handles
+=======
+
+	/* Closing unnecessary handles */
+>>>>>>> 27c5805d37934334dd5e3d530c6047782c0fab11
 	CloseHandle(processHandle);
 	CloseHandle(tokenHandle);
 	CloseHandle(threadTokenHandle);
@@ -317,21 +327,21 @@ static int getElevation(char *elevationType) {
 
 	if ( strcmp(elevationType, "TI") == 0 )
 	{
-		// Call OpenProcess() to open TRUSTEDINSTALLER
+		/* Call OpenProcess() to open TRUSTEDINSTALLER */
 		processHandle = OpenProcess(PROCESS_QUERY_INFORMATION, true, PID_TO_IMPERSONATE_TI);
 		if ( !processHandle )
 		{
 			return 6;
 		}
 
-		// Call OpenProcessToken()
+		/* Call OpenProcessToken() */
 		getToken = OpenProcessToken(processHandle, TOKEN_DUPLICATE | TOKEN_ASSIGN_PRIMARY | TOKEN_QUERY, &tokenHandle);
 		if ( !getToken )
 		{
 			return 7;
 		}
 
-		// Impersonate user in a thread
+		/* Impersonate user in a thread */
 		impersonateUser = ImpersonateLoggedOnUser(tokenHandle);
 		if ( !impersonateUser )
 		{
@@ -351,7 +361,7 @@ static int getElevation(char *elevationType) {
 		}
 	}
 
-	return 0; // everything went swimmingly
+	return 0; /* everything went swimmingly */
 }
 
 
@@ -396,12 +406,12 @@ XS(w32_LoginName)
     DWORD size = countof(name);
 
     if (items)
-	Perl_croak(aTHX_ "usage: Win32::Elevate::LoginName()");
+	Perl_croak(aTHXR_ "usage: Win32::Elevate::LoginName()");
 
     EXTEND(SP,1);
 
     if (GetUserNameW(name, &size)) {
-        ST(0) = wstr_to_sv(aTHX_ name);
+        ST(0) = wstr_to_sv(aTHXR_ name);
         XSRETURN(1);
     }
 
