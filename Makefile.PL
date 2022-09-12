@@ -12,7 +12,7 @@ unless ($^O eq "MSWin32" || $^O eq "cygwin") {
 WriteMakefile(
     NAME              => 'Win32::Elevate',
     VERSION_FROM      => 'lib/Win32/Elevate.pm', # finds $VERSION, requires EU::MM from perl >= 5.5
-    PREREQ_PM         => {}, # e.g., Module::Name => 1.1
+    PREREQ_PM         => {Win32 => 0.27_01}, # e.g., Module::Name => 1.1
     ABSTRACT_FROM     => 'lib/Win32/Elevate.pm', # retrieve abstract from module
     AUTHOR            => 'Daniel Just',
     LICENSE           => 'perl',
